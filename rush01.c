@@ -7,11 +7,16 @@
 typedef struct s_hint
 {
 	int *hint_arr;
-	int *col_top;
-	int *col_bot;
-	int *row_left;
-	int *row_right;
+	int *top;
+	int *bot;
+	int *left;
+	int *right;
 }t_hint;
+
+typedef struct s_combinaison
+{
+	int tab[4];
+}t_combinaison;
 
 int	check_arg(int argc, char *argv[])
 {
@@ -49,29 +54,29 @@ int	check_arg(int argc, char *argv[])
 void	parse_argv(char *argv_one, t_hint *hint)
 {
 	int	j = 0;
-	//for (int i = 0; i < 32; i+=2)
-	for (int i = 0; argv_one[i]; i+=2)
+	for (int i = 0; i < 32; i+=2)
+	//for (int i = 0; argv_one[i]; i+=2)
+	//for (int i = 0; argv_one[i]; i++)
 	{
 		hint->hint_arr[j] = argv_one[i] - '0';
 		j++;
 	}
 }
 
-int	**create_hint_grid(int *hint_arr)
+void	print_hint(t_hint *hint)
 {
-	int	**hint_grid = (int **)calloc(4, sizeof(int *));
-	
-	int k = 0;	
-	for (int j = 0; j < 4; j++)
-	{
-		hint_grid[j] = (int *)calloc(4, sizeof(int ));
-		for (int i = 0; i < 4; i++)
-		{
-			hint_grid[j][i] = hint_arr[k];
-			k++;
-		}	
-	}
-	return hint_grid;
+	for (int i = 0; i < 4; i++)
+		printf("%d ",  hint->top[i]);
+	printf("\n");
+	for (int i = 0; i < 4; i++)
+		printf("%d ",  hint->bot[i]);
+	printf("\n");
+	for (int i = 0; i < 4; i++)
+		printf("%d ",  hint->left[i]);
+	printf("\n");
+	for (int i = 0; i < 4; i++)
+		printf("%d ",  hint->right[i]);
+	printf("\n");
 }
 
 int	**create_solved_grid(void)
@@ -89,22 +94,22 @@ void	solve_grid_one(int **grid, t_hint *hint)
 {
 	for (int k = 0; k < 4; k++)
 	{
-		if (hint->col_top[k] == 1)
+		if (hint->top[k] == 1)
 			grid[0][k] = 4;
 	}
 	for (int k = 0; k < 4; k++)
 	{
-		if (hint->col_bot[k] == 1)
+		if (hint->bot[k] == 1)
 			grid[3][k] = 4;
 	}
 	for (int k = 0; k < 4; k++)
 	{
-		if (hint->row_right[k] == 1)
+		if (hint->left[k] == 1)
 			grid[k][0] = 4;
 	}
 	for (int k = 0; k < 4; k++)
 	{
-		if (hint->row_right[k] == 1)
+		if (hint->right[k] == 1)
 			grid[k][3] = 4;
 	}
 }
@@ -113,7 +118,7 @@ void	solve_grid_four(int **grid, t_hint *hint)
 {
 	for (int k = 0; k < 4; k++)
 	{
-		if (hint->col_top[k] == 4)
+		if (hint->top[k] == 4)
 			for (int i = 0; i < 4; i++)
 			{
 				grid[i][k] = i + 1;
@@ -121,7 +126,7 @@ void	solve_grid_four(int **grid, t_hint *hint)
 	}
 	for (int k = 0; k < 4; k++)
 	{
-		if (hint->col_bot[k] == 4)
+		if (hint->bot[k] == 4)
 		{
 			for (int i = 3; i >= 0; i--)
 			{
@@ -131,7 +136,7 @@ void	solve_grid_four(int **grid, t_hint *hint)
 	}
 	for (int k = 0; k < 4; k++)
 	{
-		if (hint->row_left[k] == 4)
+		if (hint->left[k] == 4)
 			for (int i = 0; i < 4; i++)
 			{
 				grid[k][i] = i + 1;
@@ -139,7 +144,7 @@ void	solve_grid_four(int **grid, t_hint *hint)
 	}
 	for (int k = 0; k < 4; k++)
 	{
-		if (hint->row_right[k] == 4)
+		if (hint->right[k] == 4)
 			for (int i = 0; i < 4; i++)
 			{
 				grid[k][i] = 4 - i;
@@ -187,6 +192,37 @@ bool	same_n_row(int **grid, int row)
 	return true;
 }
 
+int	check_n_building(t_combinaison *combo)
+{
+	int building = 0;
+	int max = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		if (combo->tab[i] > max)
+		{
+			max = combo->tab[i];
+			building++;
+		}
+	}
+	return building;
+}
+
+void	solve_three(int **grid, t_hint *hint)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		if (hint->top[i] == 3)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+
+//					grid[j][i] 
+
+			}
+		}
+	}
+}
+
 // the constraints: 
 // 	the same number cannnot be place twice in the same col/row
 
@@ -214,10 +250,10 @@ t_hint 	*init_hint(void)
 	
 	hint->hint_arr = (int *)calloc(16, sizeof(int));
 
-	hint->col_top = calloc(4, sizeof(int));
-	hint->col_bot = calloc(4, sizeof(int));
-	hint->row_left = calloc(4, sizeof(int));
-	hint->row_right = calloc(4, sizeof(int));
+	hint->top = calloc(4, sizeof(int));
+	hint->bot = calloc(4, sizeof(int));
+	hint->left = calloc(4, sizeof(int));
+	hint->right = calloc(4, sizeof(int));
 
 	return hint;
 }
@@ -226,19 +262,19 @@ void	fill_hint_arr(t_hint *hint)
 {
 	for (int i = 0; i < 4; i++)
 	{
-		hint->col_top[i] = hint->hint_arr[i];
+		hint->top[i] = hint->hint_arr[i];
 	}
 	for (int i = 0; i < 4; i++)
 	{
-		hint->col_bot[i] = hint->hint_arr[i+4];
+		hint->bot[i] = hint->hint_arr[i+4];
 	}
 	for (int i = 0; i < 4; i++)
 	{
-		hint->row_left[i] = hint->hint_arr[i+8];
+		hint->left[i] = hint->hint_arr[i+8];
 	}
 	for (int i = 0; i < 4; i++)
 	{
-		hint->row_right[i] = hint->hint_arr[i+12];
+		hint->right[i] = hint->hint_arr[i+12];
 	}
 }
 
@@ -250,6 +286,8 @@ int	main(int argc, char *argv[])
 	t_hint	*hint = init_hint();
 	parse_argv(argv[1], hint);
 	fill_hint_arr(hint);
+	printf("HINTS:\n");
+	print_hint(hint);
 	printf("SOLVED GRID:\n");
 	solved_grid = create_solved_grid();
 	print_grid(solved_grid);
