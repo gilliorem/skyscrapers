@@ -17,6 +17,9 @@ typedef struct s_combinaison
 {
 	int tab[4];
 }t_combinaison;
+bool	same_n_row(int **grid, int row);
+void	replace_same_row(int **grid, int n, int col, int row);
+void	replace_same_col(int **grid, int n, int col, int row);
 
 int	check_arg(int argc, char *argv[])
 {
@@ -184,28 +187,63 @@ bool	same_n_row(int **grid, int row)
 			if (grid[row][col] == grid[row][k])
 			{
 				printf("same number in col %d and col %d\n", col, k);
+				replace_same_row(grid, grid[row][col], col, row);
+				return true;
 			}
 			k++;
 		}
 		k = 1;
 	}
-	return true;
+	return false;
+}
+
+bool	same_n_col(int **grid, int col)
+{
+	int k = 1;
+	for (int row = 0; row < 4; row++)
+	{
+		k = row + k;
+		if (k  > 3)
+			break;
+//		printf("col: %d\n", col);
+//		printf("k: %d\n", k);
+//		printf("cell %d\n", grid[col][col]);
+		while (k < 4)
+		{
+			if (grid[col][row] == grid[k][col])
+			{
+				printf("same number in row %d and row %d\n", row, k);
+				replace_same_col(grid, grid[col][row], col, row);
+				return true;
+			}
+			k++;
+		}
+		k = 1;
+	}
+	return false;
 }
 
 int	check_n_building(t_combinaison *combo)
 {
-	int building = 0;
+	int buildings = 0;
 	int max = 0;
 	for (int i = 0; i < 4; i++)
 	{
 		if (combo->tab[i] > max)
 		{
 			max = combo->tab[i];
-			building++;
+			buildings++;
 		}
 	}
-	return building;
+	return buildings;
 }
+
+// if hint == 3
+// 	- first cell is 1 OR 2 (cannot be 4 or 1)
+// 		(if it'3 I can not only see 3 and 4; if its 4, can only see 4)
+// 		
+// 	- when all the buildings are placed, we will see 3 buildings
+//	
 
 void	solve_three(int **grid, t_hint *hint)
 {
@@ -213,14 +251,80 @@ void	solve_three(int **grid, t_hint *hint)
 	{
 		if (hint->top[i] == 3)
 		{
-			for (int j = 0; j < 4; j++)
-			{
-
-//					grid[j][i] 
-
-			}
+			grid[0][i] = 1;
 		}
 	}
+	for (int i = 0; i < 4; i++)
+	{
+		if (hint->bot[i] == 3)
+		{
+			grid[3][i] = 1;
+		}
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		if (hint->left[i] == 3)
+		{
+			grid[i][0] = 1;
+		}
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		if (hint->right[i] == 3)
+		{
+			grid[i][3] = 1;
+		}
+	}
+}
+
+void	replace_same_row(int **grid, int n, int col, int row)
+{
+	if (n == 1)
+		n++;
+	if (n == 2)
+		n++;
+	if (n == 3)
+		n--;
+	grid[col][row] = n;
+}
+
+void	replace_same_col(int **grid, int n, int col, int row)
+{
+	if (n == 1)
+		n++;
+	if (n == 2)
+		n++;
+	if (n == 3)
+		n--;
+	grid[col][row] = n;
+}
+
+void	fill_last_cell_col(int **grid, int col)
+{
+	int sum  = 0;
+	for (int i = 0; i < 4; i++)
+		sum += grid[i][col];
+	if (sum == 7)
+	{
+		for (int i = 0; i < 4; i++)
+			if (grid[i][col] == 0)
+				grid[i][col] = 3;
+	}
+	printf("sum:%d\n", sum);
+}
+
+void	fill_last_cell_row(int **grid, int row)
+{
+	int sum  = 0;
+	for (int i = 0; i < 4; i++)
+		sum += grid[row][i];
+	if (sum == 7)
+	{
+		for (int i = 0; i < 4; i++)
+			if (grid[row][i] == 0)
+				grid[row][i] = 3;
+	}
+	printf("sum:%d\n", sum);
 }
 
 // the constraints: 
@@ -230,6 +334,15 @@ void	solve_grid(int **grid, t_hint *hint)
 {
 	solve_grid_one(grid, hint);
 	solve_grid_four(grid, hint);
+	solve_three(grid, hint);
+	for (int i = 0; i < 4; i++)
+		same_n_row(grid, i);
+	for (int i = 0; i < 4; i++)
+		same_n_col(grid, i);
+	for (int i = 0; i < 4; i++)
+		fill_last_cell_col(grid, i);
+	for (int i = 0; i < 4; i++)
+		fill_last_cell_row(grid, i);
 }
 
 void	print_grid(int **grid)
@@ -294,7 +407,8 @@ int	main(int argc, char *argv[])
 	solve_grid(solved_grid, hint);
 	printf("PRE FILED SOLVED GRID:\n");
 	print_grid(solved_grid);
-	same_n_row(solved_grid, 1);
-	printf("expected output:\ncol 0 and 3;\ncol 2 and 3;\n");
+
+//	same_n_row(solved_grid, 1);
+//	printf("expected output:\ncol 0 and 3;\ncol 2 and 3;\n");
 
 }
