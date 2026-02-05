@@ -2,9 +2,11 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef struct s_hint
 {
+	int *hint_arr;
 	int *col_top;
 	int *col_bot;
 	int *row_left;
@@ -44,17 +46,15 @@ int	check_arg(int argc, char *argv[])
 	return 1;
 }
 
-int	*parse_argv(char *argv_one)
+void	parse_argv(char *argv_one, t_hint *hint)
 {
-	int	*hint_arr = (int *)calloc(16, sizeof(int));
 	int	j = 0;
 	//for (int i = 0; i < 32; i+=2)
 	for (int i = 0; argv_one[i]; i+=2)
 	{
-		hint_arr[j] = argv_one[i] - '0';
+		hint->hint_arr[j] = argv_one[i] - '0';
 		j++;
 	}
-	return hint_arr;
 }
 
 int	**create_hint_grid(int *hint_arr)
@@ -147,6 +147,49 @@ void	solve_grid_four(int **grid, t_hint *hint)
 	}
 }
 
+//  should I create an object grid with
+//  	we are going to check in the same order as the hints.
+//	coll1top; col2top; col3top; col4top
+//		colbot->no need (for same number)
+//	row1left
+//	row2left
+//	row3left
+//	row4left
+
+// 		we can take the k out because each time we compare 
+// 		as we go down row we dont want to repeat comparaison
+// 			we dont need to do the last one as we already compare
+// 			is it the same loop that bubble sort ?
+
+//		yep I got the logic wrongly: I mixed row and col.
+
+bool	same_n_row(int **grid, int row)
+{
+	int k = 1;
+	for (int col = 0; col < 4; col++)
+	{
+		k = col + k;
+		if (k  > 3)
+			break;
+//		printf("col: %d\n", col);
+//		printf("k: %d\n", k);
+//		printf("cell %d\n", grid[col][col]);
+		while (k < 4)
+		{
+			if (grid[row][col] == grid[row][k])
+			{
+				printf("same number in col %d and col %d\n", col, k);
+			}
+			k++;
+		}
+		k = 1;
+	}
+	return true;
+}
+
+// the constraints: 
+// 	the same number cannnot be place twice in the same col/row
+
 void	solve_grid(int **grid, t_hint *hint)
 {
 	solve_grid_one(grid, hint);
@@ -168,46 +211,52 @@ void	print_grid(int **grid)
 t_hint 	*init_hint(void)
 {
 	t_hint *hint = calloc(1, sizeof(t_hint));
+	
+	hint->hint_arr = (int *)calloc(16, sizeof(int));
+
 	hint->col_top = calloc(4, sizeof(int));
 	hint->col_bot = calloc(4, sizeof(int));
 	hint->row_left = calloc(4, sizeof(int));
 	hint->row_right = calloc(4, sizeof(int));
 
-	hint->col_top[0] = 2;
-	hint->col_top[1] = 2;
-	hint->col_top[2] = 2;
-	hint->col_top[3] = 2;
-
-	hint->col_bot[0] = 3;
-	hint->col_bot[1] = 2;
-	hint->col_bot[2] = 2;
-	hint->col_bot[3] = 2;
-
-	hint->row_left[0] = 2;
-	hint->row_left[1] = 2;
-	hint->row_left[2] = 2;
-	hint->row_left[3] = 2;
-
-	hint->row_right[0] = 3;
-	hint->row_right[1] = 2;
-	hint->row_right[2] = 3;
-	hint->row_right[3] = 4;
-
 	return hint;
+}
+
+void	fill_hint_arr(t_hint *hint)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		hint->col_top[i] = hint->hint_arr[i];
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		hint->col_bot[i] = hint->hint_arr[i+4];
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		hint->row_left[i] = hint->hint_arr[i+8];
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		hint->row_right[i] = hint->hint_arr[i+12];
+	}
 }
 
 int	main(int argc, char *argv[])
 {
 	int	**solved_grid;
-	t_hint	*hint = init_hint();
-
 	if (!check_arg(argc, argv))
 		return 0;
+	t_hint	*hint = init_hint();
+	parse_argv(argv[1], hint);
+	fill_hint_arr(hint);
 	printf("SOLVED GRID:\n");
 	solved_grid = create_solved_grid();
 	print_grid(solved_grid);
 	solve_grid(solved_grid, hint);
 	printf("PRE FILED SOLVED GRID:\n");
 	print_grid(solved_grid);
+	same_n_row(solved_grid, 1);
+	printf("expected output:\ncol 0 and 3;\ncol 2 and 3;\n");
 
 }
