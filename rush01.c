@@ -17,9 +17,11 @@ typedef struct s_combinaison
 {
 	int tab[4];
 }t_combinaison;
+
 bool	same_n_row(int **grid, int row);
 void	replace_same_row(int **grid, int n, int col, int row);
 void	replace_same_col(int **grid, int n, int col, int row);
+int	check_n_building(int tab[4]);
 
 int	check_arg(int argc, char *argv[])
 {
@@ -197,6 +199,27 @@ bool	same_n_row(int **grid, int row)
 	return false;
 }
 
+bool	is_cell_free(int **grid, int try_n, int row, int col, int **hint)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		if (grid[i][col] == try_n)
+			return false;		
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		if (grid[row][i] == try_n)
+			return false;
+	}
+	int tab_test[4];
+	for (int i=0;i<4;i++)
+		tab_test[i] = grid[i][col];	
+	tab_test[row] = try_n;
+	int n = check_n_building(tab_test);
+	if (n != )
+	return true;
+}
+
 bool	same_n_col(int **grid, int col)
 {
 	int k = 1;
@@ -223,15 +246,15 @@ bool	same_n_col(int **grid, int col)
 	return false;
 }
 
-int	check_n_building(t_combinaison *combo)
+int	check_n_building(int tab[4])
 {
 	int buildings = 0;
 	int max = 0;
 	for (int i = 0; i < 4; i++)
 	{
-		if (combo->tab[i] > max)
+		if (tab[i] > max)
 		{
-			max = combo->tab[i];
+			max = tab[i];
 			buildings++;
 		}
 	}
