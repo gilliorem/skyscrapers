@@ -15,6 +15,7 @@ typedef struct s_hint
 
 typedef struct s_combinaison
 {
+	int size;
 	int tab[4];
 }t_combinaison;
 
@@ -205,6 +206,10 @@ int	check_n_building(int tab[4])
 	int max = 0;
 	for (int i = 0; i < 4; i++)
 	{
+		if (tab[i] == 0)
+		{
+			return 0;
+		}
 		if (tab[i] > max)
 		{
 			max = tab[i];
@@ -216,11 +221,33 @@ int	check_n_building(int tab[4])
 
 bool	is_cell_free(int **grid, int try_n, int row, int col, t_hint *hint)
 {
+	if (try_n == 3)
+	{
+		if (row == 0)
+		{
+			if (hint->top[col] == 3)
+				return false;
+		}
+		if (row == 3)
+		{
+			if (hint->bot[col] == 3)
+				return false;
+		}
+		if (col == 0)
+		{
+			if (hint->left[row] == 3)
+				return false;
+		}
+		if (col == 3)
+		{
+			if (hint->right[row] == 3)
+				return false;
+		}
+	}
 	for (int i = 0; i < 4; i++)
 	{
 		if (grid[i][col] == try_n)
 		{
-			printf("%d is already in the col %d\n", try_n, col);
 			return false;
 		}
 	}
@@ -228,7 +255,6 @@ bool	is_cell_free(int **grid, int try_n, int row, int col, t_hint *hint)
 	{
 		if (grid[row][i] == try_n)
 		{
-			printf("%d is already in the row %d\n", try_n, row);
 			return false;
 		}
 	}
@@ -237,13 +263,81 @@ bool	is_cell_free(int **grid, int try_n, int row, int col, t_hint *hint)
 		tab_test[i] = grid[i][col];	
 	tab_test[row] = try_n;
 	int n = check_n_building(tab_test);
-	printf("n:%d\n", n);
-	//if (n != )
-	printf("cell is free\n");
+	if (n != hint->top[col] && n != 0)
+		return false;
+
+	for (int i = 0; i < 4; i++)
+		tab_test[3 - i] = grid[i][col];	
+	tab_test[3 - row] = try_n;
+	n = check_n_building(tab_test);
+	if (n != hint->bot[col] && n != 0)
+		return false;
+
+	for (int i=0; i<4; i++)
+		tab_test[i] = grid[row][i];	
+	tab_test[col] = try_n;
+	n = check_n_building(tab_test);
+	if (n != hint->left[row] && n != 0)
+		return false;
+
+	for (int i = 0; i < 4; i++)
+		tab_test[3 - i] = grid[row][i];	
+	tab_test[3 - col] = try_n;
+	n = check_n_building(tab_test);
+	if (n != hint->right[row] && n != 0)
+		return false;
+
+
 	return true;
 }
 
-
+bool	create_combo_matrix(int **grid, t_hint *hint)
+{
+	bool flag = 0;
+	t_combinaison combo[4][4];
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			combo[i][j].size = 0;
+			for (int k = 0; k < 4; k++)
+			{
+				combo[i][j].tab[k] = 0;
+			}
+		}
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (grid[i][j] == 0)
+			{
+				for (int k = 1; k <= 4; k++)
+				{
+					if (is_cell_free(grid, k, i, j, hint))
+					{
+						int n = combo[i][j].size;
+						combo[i][j].tab[n] = k;
+						combo[i][j].size++;
+					}
+				}
+			}
+		}
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (combo[i][j].size == 1)
+			{
+				grid[i][j] = combo[i][j].tab[0];
+				printf("grid[%d][%d] = %d\n", i, j, combo[i][j].tab[0]);
+				flag = 1;
+			}
+		}
+	}
+	return flag;
+}
 
 void	solve_grid(int **grid, t_hint *hint)
 {
@@ -298,6 +392,7 @@ void	fill_hint_arr(t_hint *hint)
 	}
 }
 
+
 int	main(int argc, char *argv[])
 {
 	int	**solved_grid;
@@ -314,6 +409,17 @@ int	main(int argc, char *argv[])
 	solve_grid(solved_grid, hint);
 	printf("PRE FILED SOLVED GRID:\n");
 	print_grid(solved_grid);
+
+	int i = 0;
+	bool flag = 0;
+	do
+	{
+		flag = create_combo_matrix(solved_grid, hint);
+		i++;
+	}
+	while (flag && i < 100); 
+	print_grid(solved_grid);
+	printf("i: %d\n", i);
 
 //	same_n_row(solved_grid, 1);
 //	printf("expected output:\ncol 0 and 3;\ncol 2 and 3;\n");
