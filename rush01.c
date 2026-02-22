@@ -60,8 +60,6 @@ void	parse_argv(char *argv_one, t_hint *hint)
 {
 	int	j = 0;
 	for (int i = 0; i < 32; i+=2)
-	//for (int i = 0; argv_one[i]; i+=2)
-	//for (int i = 0; argv_one[i]; i++)
 	{
 		hint->hint_arr[j] = argv_one[i] - '0';
 		j++;
@@ -95,7 +93,7 @@ int	**create_solved_grid(void)
 	return solved_grid;
 }
 
-void	solve_grid_one(int **grid, t_hint *hint)
+void	solve_one(int **grid, t_hint *hint)
 {
 	for (int k = 0; k < 4; k++)
 	{
@@ -119,7 +117,7 @@ void	solve_grid_one(int **grid, t_hint *hint)
 	}
 }
 
-void	solve_grid_four(int **grid, t_hint *hint)
+void	solve_four(int **grid, t_hint *hint)
 {
 	for (int k = 0; k < 4; k++)
 	{
@@ -157,21 +155,23 @@ void	solve_grid_four(int **grid, t_hint *hint)
 	}
 }
 
-//  should I create an object grid with
-//  	we are going to check in the same order as the hints.
-//	coll1top; col2top; col3top; col4top
-//		colbot->no need (for same number)
-//	row1left
-//	row2left
-//	row3left
-//	row4left
+void	replace_same_row(int **grid, int n, int col, int row)
+{
+	if (n == 1 || n == 2 || n == 3)
+	{
+		n++;
+	}
+	grid[col][row] = n;
+}
 
-// 		we can take the k out because each time we compare 
-// 		as we go down row we dont want to repeat comparaison
-// 			we dont need to do the last one as we already compare
-// 			is it the same loop that bubble sort ?
-
-//		yep I got the logic wrongly: I mixed row and col.
+void	replace_same_col(int **grid, int n, int col, int row)
+{
+	if (n == 1 || n == 2 || n == 3)
+	{
+		n++;
+	}
+	grid[col][row] = n;
+}
 
 bool	same_n_row(int **grid, int row)
 {
@@ -181,62 +181,12 @@ bool	same_n_row(int **grid, int row)
 		k = col + k;
 		if (k  > 3)
 			break;
-//		printf("col: %d\n", col);
-//		printf("k: %d\n", k);
-//		printf("cell %d\n", grid[col][col]);
 		while (k < 4)
 		{
 			if (grid[row][col] == grid[row][k])
 			{
 				printf("same number in col %d and col %d\n", col, k);
 				replace_same_row(grid, grid[row][col], col, row);
-				return true;
-			}
-			k++;
-		}
-		k = 1;
-	}
-	return false;
-}
-
-bool	is_cell_free(int **grid, int try_n, int row, int col, int **hint)
-{
-	for (int i = 0; i < 4; i++)
-	{
-		if (grid[i][col] == try_n)
-			return false;		
-	}
-	for (int i = 0; i < 4; i++)
-	{
-		if (grid[row][i] == try_n)
-			return false;
-	}
-	int tab_test[4];
-	for (int i=0;i<4;i++)
-		tab_test[i] = grid[i][col];	
-	tab_test[row] = try_n;
-	int n = check_n_building(tab_test);
-	if (n != )
-	return true;
-}
-
-bool	same_n_col(int **grid, int col)
-{
-	int k = 1;
-	for (int row = 0; row < 4; row++)
-	{
-		k = row + k;
-		if (k  > 3)
-			break;
-//		printf("col: %d\n", col);
-//		printf("k: %d\n", k);
-//		printf("cell %d\n", grid[col][col]);
-		while (k < 4)
-		{
-			if (grid[col][row] == grid[k][col])
-			{
-				printf("same number in row %d and row %d\n", row, k);
-				replace_same_col(grid, grid[col][row], col, row);
 				return true;
 			}
 			k++;
@@ -261,12 +211,58 @@ int	check_n_building(int tab[4])
 	return buildings;
 }
 
-// if hint == 3
-// 	- first cell is 1 OR 2 (cannot be 4 or 1)
-// 		(if it'3 I can not only see 3 and 4; if its 4, can only see 4)
-// 		
-// 	- when all the buildings are placed, we will see 3 buildings
-//	
+bool	is_cell_free(int **grid, int try_n, int row, int col, t_hint *hint)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		if (grid[i][col] == try_n)
+		{
+			printf("%d is already in the col %d\n", try_n, col);
+			return false;
+		}
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		if (grid[row][i] == try_n)
+		{
+			printf("%d is already in the row %d\n", try_n, row);
+			return false;
+		}
+	}
+	int tab_test[4];
+	for (int i=0;i<4;i++)
+		tab_test[i] = grid[i][col];	
+	tab_test[row] = try_n;
+	int n = check_n_building(tab_test);
+	printf("n:%d\n", n);
+	//if (n != )
+	printf("cell is free\n");
+	return true;
+}
+
+bool	same_n_col(int **grid, int col)
+{
+	int k = 1;
+	for (int row = 0; row < 4; row++)
+	{
+		k = row + k;
+		if (k  > 3)
+			break;
+		while (k < 4)
+		{
+			if (grid[col][row] == grid[k][col])
+			{
+				printf("same number in row %d and row %d\n", row, k);
+				replace_same_col(grid, grid[col][row], col, row);
+				return true;
+			}
+			k++;
+		}
+		k = 1;
+	}
+	return false;
+}
+
 
 void	solve_three(int **grid, t_hint *hint)
 {
@@ -300,28 +296,6 @@ void	solve_three(int **grid, t_hint *hint)
 	}
 }
 
-void	replace_same_row(int **grid, int n, int col, int row)
-{
-	if (n == 1)
-		n++;
-	if (n == 2)
-		n++;
-	if (n == 3)
-		n--;
-	grid[col][row] = n;
-}
-
-void	replace_same_col(int **grid, int n, int col, int row)
-{
-	if (n == 1)
-		n++;
-	if (n == 2)
-		n++;
-	if (n == 3)
-		n--;
-	grid[col][row] = n;
-}
-
 void	fill_last_cell_col(int **grid, int col)
 {
 	int sum  = 0;
@@ -350,22 +324,11 @@ void	fill_last_cell_row(int **grid, int row)
 	printf("sum:%d\n", sum);
 }
 
-// the constraints: 
-// 	the same number cannnot be place twice in the same col/row
-
 void	solve_grid(int **grid, t_hint *hint)
 {
-	solve_grid_one(grid, hint);
-	solve_grid_four(grid, hint);
-	solve_three(grid, hint);
-	for (int i = 0; i < 4; i++)
-		same_n_row(grid, i);
-	for (int i = 0; i < 4; i++)
-		same_n_col(grid, i);
-	for (int i = 0; i < 4; i++)
-		fill_last_cell_col(grid, i);
-	for (int i = 0; i < 4; i++)
-		fill_last_cell_row(grid, i);
+	solve_one(grid, hint);
+	solve_four(grid, hint);
+	is_cell_free(grid, 3, 0, 0, hint);
 }
 
 void	print_grid(int **grid)
@@ -390,7 +353,7 @@ t_hint 	*init_hint(void)
 	hint->bot = calloc(4, sizeof(int));
 	hint->left = calloc(4, sizeof(int));
 	hint->right = calloc(4, sizeof(int));
-
+	
 	return hint;
 }
 
@@ -424,7 +387,7 @@ int	main(int argc, char *argv[])
 	fill_hint_arr(hint);
 	printf("HINTS:\n");
 	print_hint(hint);
-	printf("SOLVED GRID:\n");
+	printf("GRID:\n");
 	solved_grid = create_solved_grid();
 	print_grid(solved_grid);
 	solve_grid(solved_grid, hint);
