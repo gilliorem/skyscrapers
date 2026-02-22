@@ -155,25 +155,7 @@ void	solve_four(int **grid, t_hint *hint)
 	}
 }
 
-void	replace_same_row(int **grid, int n, int col, int row)
-{
-	if (n == 1 || n == 2 || n == 3)
-	{
-		n++;
-	}
-	grid[col][row] = n;
-}
-
-void	replace_same_col(int **grid, int n, int col, int row)
-{
-	if (n == 1 || n == 2 || n == 3)
-	{
-		n++;
-	}
-	grid[col][row] = n;
-}
-
-bool	same_n_row(int **grid, int row)
+bool	is_same_n_row(int **grid, int row)
 {
 	int k = 1;
 	for (int col = 0; col < 4; col++)
@@ -186,7 +168,28 @@ bool	same_n_row(int **grid, int row)
 			if (grid[row][col] == grid[row][k])
 			{
 				printf("same number in col %d and col %d\n", col, k);
-				replace_same_row(grid, grid[row][col], col, row);
+				return true;
+			}
+			k++;
+		}
+		k = 1;
+	}
+	return false;
+}
+
+bool	is_same_n_col(int **grid, int col)
+{
+	int k = 1;
+	for (int row = 0; row < 4; row++)
+	{
+		k = row + k;
+		if (k  > 3)
+			break;
+		while (k < 4)
+		{
+			if (grid[col][row] == grid[k][col])
+			{
+				printf("same number in row %d and row %d\n", row, k);
 				return true;
 			}
 			k++;
@@ -240,89 +243,7 @@ bool	is_cell_free(int **grid, int try_n, int row, int col, t_hint *hint)
 	return true;
 }
 
-bool	same_n_col(int **grid, int col)
-{
-	int k = 1;
-	for (int row = 0; row < 4; row++)
-	{
-		k = row + k;
-		if (k  > 3)
-			break;
-		while (k < 4)
-		{
-			if (grid[col][row] == grid[k][col])
-			{
-				printf("same number in row %d and row %d\n", row, k);
-				replace_same_col(grid, grid[col][row], col, row);
-				return true;
-			}
-			k++;
-		}
-		k = 1;
-	}
-	return false;
-}
 
-
-void	solve_three(int **grid, t_hint *hint)
-{
-	for (int i = 0; i < 4; i++)
-	{
-		if (hint->top[i] == 3)
-		{
-			grid[0][i] = 1;
-		}
-	}
-	for (int i = 0; i < 4; i++)
-	{
-		if (hint->bot[i] == 3)
-		{
-			grid[3][i] = 1;
-		}
-	}
-	for (int i = 0; i < 4; i++)
-	{
-		if (hint->left[i] == 3)
-		{
-			grid[i][0] = 1;
-		}
-	}
-	for (int i = 0; i < 4; i++)
-	{
-		if (hint->right[i] == 3)
-		{
-			grid[i][3] = 1;
-		}
-	}
-}
-
-void	fill_last_cell_col(int **grid, int col)
-{
-	int sum  = 0;
-	for (int i = 0; i < 4; i++)
-		sum += grid[i][col];
-	if (sum == 7)
-	{
-		for (int i = 0; i < 4; i++)
-			if (grid[i][col] == 0)
-				grid[i][col] = 3;
-	}
-	printf("sum:%d\n", sum);
-}
-
-void	fill_last_cell_row(int **grid, int row)
-{
-	int sum  = 0;
-	for (int i = 0; i < 4; i++)
-		sum += grid[row][i];
-	if (sum == 7)
-	{
-		for (int i = 0; i < 4; i++)
-			if (grid[row][i] == 0)
-				grid[row][i] = 3;
-	}
-	printf("sum:%d\n", sum);
-}
 
 void	solve_grid(int **grid, t_hint *hint)
 {
