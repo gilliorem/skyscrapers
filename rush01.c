@@ -287,8 +287,67 @@ bool	is_cell_free(int **grid, int try_n, int row, int col, t_hint *hint)
 	if (n != hint->right[row] && n != 0)
 		return false;
 
+	if (try_n == 1)
+	{
+		//if ((row == 1 || row == 2) && (col == 1 || col == 2))
+		if (row == 1 && col == 1)
+		{
+			if (hint->top[1] == 3 && grid[2][1] == 4)
+				return false;
+			if (hint->left[1] == 3 && grid[1][2] == 4)
+				return false;
+		}
+		if (row == 1 && col == 2)
+		{
+			if (hint->top[2] == 3 && grid[2][2] == 4)
+				return false;
+			if (hint->right[1] == 3 && grid[1][1] == 4)
+				return false;
+		}
+		if (row == 2 && col == 1)
+		{
+			if (hint->bot[1] == 3 && grid[1][1] == 4)
+				return false;
+			if (hint->left[2] == 3 && grid[2][2] == 4)
+				return false;
+		}
+		if (row == 2 && col == 2)
+		{
+			if (hint->bot[2] == 3 && grid[1][2] == 4)
+				return false;
+			if (hint->right[2] == 3 && grid[2][1] == 4)
+				return false;
+		}
 
+
+	}
 	return true;
+}
+
+bool	is_value_in_tab(t_combinaison *combo, int value)
+{
+	int i = 0;
+	for (i = 0; i < 4; i++)
+		if (combo->tab[i] == value)
+			return true;
+	return false;
+}
+
+void	remove_cel_value(t_combinaison *combo, int value)
+{
+	int i = 0;
+	for (i = 0; i < 4; i++)
+		if (combo->tab[i] == value)
+		{
+			combo->tab[i] = 0;
+			break;
+		}
+	for (int k = i + 1; k < 4; k++)
+	{
+		combo->tab[k - 1] = combo->tab[k];
+	}
+	combo->tab[combo->size - 1] = 0;
+	combo->size--;
 }
 
 bool	create_combo_matrix(int **grid, t_hint *hint)
@@ -324,6 +383,60 @@ bool	create_combo_matrix(int **grid, t_hint *hint)
 			}
 		}
 	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (hint->top[i] == 2)
+		{
+			if (is_value_in_tab(&combo[0][i], 1) && is_value_in_tab(&combo[1][i], 2)
+			&& grid[2][i] != 0)
+			{
+				remove_cel_value(&combo[0][i], 1);
+				remove_cel_value(&combo[1][i], 2);
+			}
+
+		}
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		if (hint->bot[i] == 2)
+		{
+			if (is_value_in_tab(&combo[3][i], 1) && is_value_in_tab(&combo[2][i], 2)
+				&& grid[1][i] != 0)
+			{
+				remove_cel_value(&combo[3][i], 1);
+				remove_cel_value(&combo[2][i], 2);
+			}
+
+		}
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		if (hint->left[i] == 2)
+		{
+			if (is_value_in_tab(&combo[i][0], 1) && is_value_in_tab(&combo[i][1], 2)
+					&& grid[i][3] != 0)
+			{
+				remove_cel_value(&combo[i][0], 1);
+				remove_cel_value(&combo[i][1], 2);
+			}
+
+		}
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		if (hint->right[i] == 2)
+		{
+			if (is_value_in_tab(&combo[i][3], 1) && is_value_in_tab(&combo[i][2], 2)
+					&& grid[i][1] != 0)
+			{
+				remove_cel_value(&combo[i][3], 1);
+				remove_cel_value(&combo[i][2], 2);
+			}
+
+		}
+	}
+
 	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 4; j++)
